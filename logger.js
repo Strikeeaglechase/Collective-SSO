@@ -1,7 +1,7 @@
 const fs = require("fs");
 let curLogName = "";
 let logStream;
-const path = "../logs/";
+const path = "./logs/";
 
 function checkLog() {
 	const curDate = new Date();
@@ -14,7 +14,7 @@ function checkLog() {
 		}
 		const fullPath = `${path}${logName}`;
 		if (!fs.existsSync(fullPath)) {
-			fs.writeFileSync(fullPath, "Log created");
+			fs.writeFileSync(fullPath, "Log created\n");
 			console.log(`Created new log file ${fullPath}`);
 		} else {
 			console.log(`Resuming with old log file ${fullPath}`);

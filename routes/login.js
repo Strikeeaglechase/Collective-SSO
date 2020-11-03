@@ -21,7 +21,8 @@ function _encode(obj) {
 let lookupIds = [];
 
 module.exports = function () {
-	return [{
+	return [
+		{
 			method: "get",
 			route: "/login",
 			handler: async function (req, res) {
@@ -75,7 +76,8 @@ module.exports = function () {
 					scope: "identify",
 				};
 				const response = await fetch(
-					`https://discordapp.com/api/oauth2/token`, {
+					`https://discordapp.com/api/oauth2/token`,
+					{
 						method: "POST",
 						headers: {
 							Authorization: `Basic ${creds}`,
@@ -86,7 +88,8 @@ module.exports = function () {
 				);
 				const json = await response.json();
 				const discordData = await fetch(
-					"http://discordapp.com/api/users/@me", {
+					"http://discordapp.com/api/users/@me",
+					{
 						method: "GET",
 						headers: {
 							Authorization: `Bearer ${json.access_token}`,
@@ -95,13 +98,9 @@ module.exports = function () {
 				);
 				const discordUserData = await discordData.json();
 				if (!discordUserData.id) return res.sendStatus(500);
-				const user = {
-					id: discordUserData.id,
-					username: discordUserData.username,
-				};
 				const lookup = {
 					id: uuidv4(),
-					user: user,
+					user: discordUserData,
 					exp: Date.now() + 30 * 1000, // only valid for 30seconds
 				};
 				lookupIds.push(lookup);

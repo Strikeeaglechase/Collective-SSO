@@ -11,9 +11,13 @@
 			}
 			document.cookie = name + "=" + (value || "") + expires + "; path=/";
 		}
-		const serviceURL = window.location.search.substring("?service=".length);
-		setCookie("service", serviceURL, 1);
-		window.location.href = "/OAuth2";
+		function redirect() {
+			const serviceURL = window.location.search.substring("?service=".length);
+			setCookie("service", serviceURL, 1);
+			if (!serviceURL) return alert("Invalid service URL");
+			window.location.href = "/OAuth2";
+		}
+		redirect();
 	</script>
 </head>
 
