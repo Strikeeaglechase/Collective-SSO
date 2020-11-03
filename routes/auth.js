@@ -51,7 +51,7 @@ module.exports = function () {
 						res.cookie("user", newJwt.compact(), {
 							expire: Date.now() + EXPR_TIME,
 						});
-						res.redirect(`${req.cookies.service}?code=${lookupID}`);
+						res.redirect(`${req.query.service}?code=${lookupID}`);
 						return;
 					} catch (e) {
 						console.log(e);
