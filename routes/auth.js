@@ -69,6 +69,13 @@ module.exports = function () {
 		},
 		{
 			method: "get",
+			route: "/logout",
+			handler: async function (req, res) {
+				res.sendFile(path.resolve("./pages/logout.html"));
+			},
+		},
+		{
+			method: "get",
 			route: "/OAuth2",
 			handler: async function (req, res) {
 				res.redirect(
