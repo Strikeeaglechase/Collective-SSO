@@ -2,11 +2,13 @@ const fetch = require("node-fetch");
 const path = require("path");
 const btoa = require("btoa");
 const uuidv4 = require("uuid").v4;
+const njwt = require("njwt");
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT = process.env.REDIRECT;
 const REDIRECT_ENCODED = encodeURIComponent(REDIRECT);
-
+const JWT_KEY = process.env.KEY;
+const EXPR_TIME = 1000 * 60 * 60 * 24; // 1hr
 function _encode(obj) {
 	let string = "";
 
@@ -19,12 +21,48 @@ function _encode(obj) {
 }
 
 let lookupIds = [];
+function addLookup(user) {
+	const id = uuidv4();
+	const lookup = {
+		id: id,
+		user: user,
+		exp: Date.now() + 30 * 1000, // only valid for 30seconds
+	};
+	lookupIds.push(lookup);
+	return id;
+}
 
 module.exports = function () {
 	return [
 		{
 			method: "get",
 			route: "/login",
+			handler: async function (req, res) {
+				if (req.cookies.user) {
+					// Has a user JWT, lets see if its still valid
+					try {
+						const result = njwt.verify(req.cookies.user, JWT_KEY);
+						const newJwt = njwt.create(
+							{ user: result.body.user },
+							JWT_KEY
+						);
+						newJwt.setExpiration(Date.now() + EXPR_TIME);
+						const lookupID = addLookup(result.body.user);
+						res.cookie("user", newJwt.compact(), {
+							expire: Date.now() + EXPR_TIME,
+						});
+						res.redirect(`${req.cookies.service}?code=${lookupID}`);
+						return;
+					} catch (e) {
+						console.log(e);
+					}
+				}
+				res.sendFile(path.resolve("./pages/login.html"));
+			},
+		},
+		{
+			method: "get",
+			route: "/return",
 			handler: async function (req, res) {
 				res.sendFile(path.resolve("./pages/login.html"));
 			},
@@ -49,13 +87,6 @@ module.exports = function () {
 				if (!lookup) return res.sendStatus(400);
 				lookup.exp = 0; //Makes the code a one time use
 				res.send(lookup.user);
-			},
-		},
-		{
-			method: "get",
-			route: "/return",
-			handler: async function (req, res) {
-				res.sendFile(path.resolve("./pages/return.html"));
 			},
 		},
 		{
@@ -98,13 +129,14 @@ module.exports = function () {
 				);
 				const discordUserData = await discordData.json();
 				if (!discordUserData.id) return res.sendStatus(500);
-				const lookup = {
-					id: uuidv4(),
-					user: discordUserData,
-					exp: Date.now() + 30 * 1000, // only valid for 30seconds
-				};
-				lookupIds.push(lookup);
-				res.redirect(`/return?code=${lookup.id}`);
+				const lookupID = addLookup(discordUserData);
+
+				const userJwt = njwt.create({ user: discordUserData }, JWT_KEY);
+				userJwt.setExpiration(Date.now() + EXPR_TIME);
+				res.cookie("user", userJwt.compact(), {
+					expire: Date.now() + EXPR_TIME,
+				});
+				res.redirect(`/return?code=${lookupID}`);
 			},
 		},
 	];

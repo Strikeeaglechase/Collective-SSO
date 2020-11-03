@@ -2,7 +2,10 @@ require("dotenv").config();
 const fs = require("fs");
 const log = require("./logger.js");
 const express = require("express");
+const cookieParser = require('cookie-parser');
+
 const app = express();
+app.use(cookieParser());
 
 function loadRoutes() {
 	const dir = "./routes/";

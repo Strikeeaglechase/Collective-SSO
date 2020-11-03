@@ -27,16 +27,16 @@
 			if (!serviceURL) return alert("Invalid service URL");
 			window.location.href = "/OAuth2";
 		}
-		function handleReturn(){
+		function handleReturn() {
 			const redir = `${getCookie('service')}${window.location.search}`;
 			window.location = redir;
 		}
-		
-		if(window.location.search.includes("?service=")){
-			
-		}else if(window.location.search.includes("?code=")){
 
-		}else{
+		if (window.location.search.includes("?service=")) {
+			handleLogin();
+		} else if (window.location.search.includes("?code=")) {
+			handleReturn();
+		} else {
 			alert("An error has occured, please try again");
 		}
 		// redirect();
