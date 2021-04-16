@@ -21,6 +21,7 @@ function _encode(obj) {
 }
 
 let lookupIds = [];
+
 function addLookup(user) {
 	const id = uuidv4();
 	const lookup = {
@@ -33,30 +34,29 @@ function addLookup(user) {
 }
 
 module.exports = function () {
-	return [
-		{
+	return [{
 			method: "get",
 			route: "/login",
 			handler: async function (req, res) {
-				if (req.cookies.user) {
-					// Has a user JWT, lets see if its still valid
-					try {
-						const result = njwt.verify(req.cookies.user, JWT_KEY);
-						const newJwt = njwt.create(
-							{ user: result.body.user },
-							JWT_KEY
-						);
-						newJwt.setExpiration(Date.now() + EXPR_TIME);
-						const lookupID = addLookup(result.body.user);
-						res.cookie("user", newJwt.compact(), {
-							expire: Date.now() + EXPR_TIME,
-						});
-						res.redirect(`${req.query.service}?code=${lookupID}`);
-						return;
-					} catch (e) {
-						console.log(e);
-					}
-				}
+				// if (req.cookies.user) {
+				// 	// Has a user JWT, lets see if its still valid
+				// 	try {
+				// 		const result = njwt.verify(req.cookies.user, JWT_KEY);
+				// 		const newJwt = njwt.create({
+				// 			user: result.body.user
+				// 		}, JWT_KEY);
+				// 		newJwt.setExpiration(Date.now() + EXPR_TIME);
+				// 		const lookupID = addLookup(result.body.user);
+				// 		res.cookie("user", newJwt.compact(), {
+				// 			expire: Date.now() + EXPR_TIME,
+				// 		});
+				// 		res.redirect(`${req.query.service}?code=${lookupID}`);
+				// 		return;
+				// 	} catch (e) {
+				// 		console.log(e);
+				// 	}
+				// }
+				// res.cookie("service", req.originalUrl);
 				res.sendFile(path.resolve("./pages/login.html"));
 			},
 		},
@@ -114,8 +114,7 @@ module.exports = function () {
 					scope: "identify",
 				};
 				const response = await fetch(
-					`https://discordapp.com/api/oauth2/token`,
-					{
+					`https://discordapp.com/api/oauth2/token`, {
 						method: "POST",
 						headers: {
 							Authorization: `Basic ${creds}`,
@@ -126,8 +125,7 @@ module.exports = function () {
 				);
 				const json = await response.json();
 				const discordData = await fetch(
-					"http://discordapp.com/api/users/@me",
-					{
+					"http://discordapp.com/api/users/@me", {
 						method: "GET",
 						headers: {
 							Authorization: `Bearer ${json.access_token}`,
@@ -136,9 +134,12 @@ module.exports = function () {
 				);
 				const discordUserData = await discordData.json();
 				if (!discordUserData.id) return res.sendStatus(500);
+				discordUserData.originalUrl = req.cookies.service;
 				const lookupID = addLookup(discordUserData);
 
-				const userJwt = njwt.create({ user: discordUserData }, JWT_KEY);
+				const userJwt = njwt.create({
+					user: discordUserData
+				}, JWT_KEY);
 				userJwt.setExpiration(Date.now() + EXPR_TIME);
 				res.cookie("user", userJwt.compact(), {
 					expire: Date.now() + EXPR_TIME,
