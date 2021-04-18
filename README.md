@@ -21,7 +21,13 @@ To get the user info, simply make a request using the `uuid` you got from the re
 	"locale":"en-US",
 	"mfa_enabled":true,
 	"premium_type":2,
-	"orgSite": "my.cool.service/login"
+	"orgSite": "my.cool.service/login",
+	"roles": {
+		"discordId": "272143648114606083",
+		"roles": {
+			"698110603545411604": ["736881407607046165","736881315541942273","819856817982537768"]
+		}
+	}
 }
 ```
 Make sure to check the orgSite to ensure the user is logging in from your login site, and not faking a request from another one

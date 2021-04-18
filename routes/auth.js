@@ -134,7 +134,13 @@ module.exports = function () {
 				);
 				const discordUserData = await discordData.json();
 				if (!discordUserData.id) return res.sendStatus(500);
+				const rolesReq = await fetch(`https://umapi.centralmind.net/api/public/users/${discordUserData.id}`);
+				if (rolesReq.status == 200) {
+					discordUserData.roles = await rolesReq.json();
+				}
 				discordUserData.originalUrl = req.cookies.service;
+
+
 				const lookupID = addLookup(discordUserData);
 
 				const userJwt = njwt.create({
