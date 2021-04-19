@@ -6,6 +6,15 @@ const cookieParser = require('cookie-parser');
 
 const app = express();
 app.use(cookieParser());
+app.use((req, res, next) => {
+	const ip = req.headers["cf-connecting-ip"] ?
+		req.headers["cf-connecting-ip"] :
+		req.ip;
+	const body = JSON.stringify(req.body);
+	const logMsg = `[${ip}]: (${req.method}) ${req.path} ${JSON.stringify(req.query)} ${body}`;
+	log(logMsg);
+	next();
+});
 
 function loadRoutes() {
 	const dir = "./routes/";
