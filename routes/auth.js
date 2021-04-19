@@ -147,9 +147,9 @@ module.exports = function () {
 					user: discordUserData
 				}, JWT_KEY);
 				userJwt.setExpiration(Date.now() + EXPR_TIME);
-				res.cookie("user", userJwt.compact(), {
-					expire: Date.now() + EXPR_TIME,
-				});
+				// res.cookie("user", userJwt.compact(), {
+				// 	expire: Date.now() + EXPR_TIME,
+				// });
 				res.redirect(`/return?code=${lookupID}`);
 			},
 		},
