@@ -12,7 +12,7 @@ function newToken() {
 interface Session {
 	id: string;
 	userId: string;
-	serviceTokens: { name: string, token: string; }[];
+	serviceTokens: { name: string; token: string }[];
 	lastUsed: number;
 	token: string;
 	data: DiscordUserData;
@@ -51,7 +51,9 @@ class Application {
 	}
 
 	public async createSession(data: DiscordUserData): Promise<Session> {
-		const existing = await this.sessions.collection.findOne({ userId: data.id });
+		const existing = await this.sessions.collection.findOne({
+			userId: data.id
+		});
 		if (existing) await this.sessions.remove(existing.id);
 
 		const session: Session = {
@@ -98,11 +100,11 @@ class Application {
 	}
 
 	public async getUserRoles(userId: string) {
-		const roleInfo: { discordId: string, roles: string[]; }[] = [];
+		const roleInfo: { discordId: string; roles: string[] }[] = [];
 
 		const prom = this.framework.client.guilds.cache.map(async guild => {
 			const guildObj = { discordId: guild.id, roles: [] };
-			const member = await guild.members.fetch(userId).catch(() => { });
+			const member = await guild.members.fetch(userId).catch(() => {});
 			if (!member) return;
 			member.roles.cache.map(role => guildObj.roles.push(role.id));
 
@@ -112,6 +114,16 @@ class Application {
 		await Promise.all(prom);
 
 		return roleInfo;
+	}
+
+	public async getMembersWithRole(guildId: string, roleId: string): Promise<string[]> {
+		const guild = await this.framework.client.guilds.fetch(guildId).catch(() => {});
+		if (!guild) return [];
+
+		const role = guild.roles.cache.get(roleId);
+		if (!role) return [];
+
+		return role.members.map(member => member.id);
 	}
 }
 

@@ -25,7 +25,8 @@ function _encode(obj) {
     return string.substring(1);
 }
 export default function ({ app }) {
-    return [{
+    return [
+        {
             method: "get",
             route: "/v2/login",
             handler: function (req, res) {
@@ -122,8 +123,8 @@ export default function ({ app }) {
                         return res.sendStatus(500);
                     const rolesReq = yield fetch(`https://umapi.centralmind.net/api/users/${discordUserData.id}`, {
                         headers: {
-                            Authorization: `Bearer ${process.env.umtok}`
-                        }
+                            Authorization: `Bearer ${process.env.umtok}`,
+                        },
                     });
                     if (rolesReq.status == 200) {
                         discordUserData.roles = yield rolesReq.json();
@@ -134,6 +135,33 @@ export default function ({ app }) {
                     res.redirect(`/v2/return`);
                 });
             },
-        }];
+        },
+        {
+            route: "/roles/:id",
+            method: "get",
+            handler: function (req, res) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    const userId = req.params.id;
+                    if (!userId)
+                        return res.sendStatus(400);
+                    const roles = yield app.getUserRoles(userId);
+                    res.send(roles);
+                });
+            },
+        },
+        {
+            route: "/members/:guildId/:roleId",
+            method: "get",
+            handler: function (req, res) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    const guildId = req.params.guildId;
+                    const roleId = req.params.roleId;
+                    if (!guildId || !roleId)
+                        return res.sendStatus(400);
+                    const members = yield app.getMembersWithRole(guildId, roleId);
+                    res.send(members);
+                });
+            },
+        },
+    ];
 }
-;

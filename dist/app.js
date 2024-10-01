@@ -23,7 +23,9 @@ class Application {
     }
     createSession(data) {
         return __awaiter(this, void 0, void 0, function* () {
-            const existing = yield this.sessions.collection.findOne({ userId: data.id });
+            const existing = yield this.sessions.collection.findOne({
+                userId: data.id
+            });
             if (existing)
                 yield this.sessions.remove(existing.id);
             const session = {
@@ -84,6 +86,17 @@ class Application {
             }));
             yield Promise.all(prom);
             return roleInfo;
+        });
+    }
+    getMembersWithRole(guildId, roleId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const guild = yield this.framework.client.guilds.fetch(guildId).catch(() => { });
+            if (!guild)
+                return [];
+            const role = guild.roles.cache.get(roleId);
+            if (!role)
+                return [];
+            return role.members.map(member => member.id);
         });
     }
 }
