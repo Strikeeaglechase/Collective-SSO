@@ -34,20 +34,21 @@ function addLookup(user) {
     const lookup = {
         id: id,
         user: user,
-        exp: Date.now() + 30 * 1000, // only valid for 30seconds
+        exp: Date.now() + 30 * 1000 // only valid for 30seconds
     };
     lookupIds.push(lookup);
     return id;
 }
 export default function ({ app }) {
-    return [{
+    return [
+        {
             method: "get",
             route: "/login",
             handler: function (req, res) {
                 return __awaiter(this, void 0, void 0, function* () {
                     res.sendFile(path.resolve("../pages/login.html"));
                 });
-            },
+            }
         },
         {
             method: "get",
@@ -56,7 +57,7 @@ export default function ({ app }) {
                 return __awaiter(this, void 0, void 0, function* () {
                     res.sendFile(path.resolve("../pages/login.html"));
                 });
-            },
+            }
         },
         {
             method: "get",
@@ -65,7 +66,7 @@ export default function ({ app }) {
                 return __awaiter(this, void 0, void 0, function* () {
                     res.sendFile(path.resolve("../pages/logout.html"));
                 });
-            },
+            }
         },
         {
             method: "get",
@@ -74,24 +75,24 @@ export default function ({ app }) {
                 return __awaiter(this, void 0, void 0, function* () {
                     res.redirect(`https://discordapp.com/api/oauth2/authorize?client_id=${CLIENT_ID}&scope=identify&response_type=code&redirect_uri=${REDIRECT_ENCODED}`);
                 });
-            },
+            }
         },
         {
             method: "get",
             route: "/getuser/:lookupID",
             handler: function (req, res) {
                 return __awaiter(this, void 0, void 0, function* () {
-                    lookupIds = lookupIds.filter((l) => Date.now() < l.exp);
+                    lookupIds = lookupIds.filter(l => Date.now() < l.exp);
                     const code = req.params.lookupID;
                     if (!code)
                         return res.sendStatus(400);
-                    const lookup = lookupIds.find((l) => l.id == code);
+                    const lookup = lookupIds.find(l => l.id == code);
                     if (!lookup)
                         return res.sendStatus(400);
                     lookup.exp = 0; //Makes the code a one time use
                     res.send(lookup.user);
                 });
-            },
+            }
         },
         {
             method: "get",
@@ -109,24 +110,24 @@ export default function ({ app }) {
                         grant_type: "authorization_code",
                         code: code,
                         redirect_uri: REDIRECT,
-                        scope: "identify",
+                        scope: "identify"
                     };
                     const response = yield fetch(`https://discordapp.com/api/oauth2/token`, {
                         method: "POST",
                         headers: {
-                            Authorization: `Basic ${creds}`,
-                            "Content-Type": "application/x-www-form-urlencoded",
+                            "Authorization": `Basic ${creds}`,
+                            "Content-Type": "application/x-www-form-urlencoded"
                         },
-                        body: _encode(data),
+                        body: _encode(data)
                     });
                     const json = yield response.json();
                     const discordData = yield fetch("https://discordapp.com/api/users/@me", {
                         method: "GET",
                         headers: {
-                            Authorization: `Bearer ${json.access_token}`,
-                        },
+                            Authorization: `Bearer ${json.access_token}`
+                        }
                     });
-                    const discordUserData = yield discordData.json();
+                    const discordUserData = (yield discordData.json());
                     if (!discordUserData.id)
                         return res.sendStatus(500);
                     discordUserData.roles = yield app.getUserRoles(discordUserData.id);
@@ -138,7 +139,7 @@ export default function ({ app }) {
                     userJwt.setExpiration(Date.now() + EXPR_TIME);
                     res.redirect(`/return?code=${lookupID}`);
                 });
-            },
-        }];
+            }
+        }
+    ];
 }
-;

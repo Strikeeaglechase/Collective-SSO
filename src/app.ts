@@ -41,7 +41,7 @@ interface DiscordUserData {
 
 class Application {
 	public framework: FrameworkClient;
-	private sessions: CollectionManager<string, Session>;
+	private sessions: CollectionManager<Session>;
 	public log: Logger;
 
 	public async init(framework: FrameworkClient) {

@@ -21,13 +21,13 @@
 	"dependencies": {
 		"btoa": "^1.2.1",
 		"cookie-parser": "^1.4.5",
-		"discord.js": "^13.1.0",
+		"discord.js": "^14.14.1",
 		"dotenv": "^8.2.0",
 		"express": "^4.17.1",
 		"mongodb": "^3.6.5",
 		"njwt": "^1.0.0",
 		"node-fetch": "^2.6.1",
-		"strike-discord-framework": "^1.4.13",
+		"strike-discord-framework": "^1.5.9",
 		"uuid": "^8.3.1"
 	},
 	"devDependencies": {

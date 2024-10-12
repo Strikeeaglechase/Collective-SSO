@@ -1,5 +1,5 @@
 import cookieParser from "cookie-parser";
-import Discord from "discord.js";
+import Discord, { IntentsBitField, Partials } from "discord.js";
 import { config } from "dotenv";
 import express from "express";
 import fs from "fs";
@@ -11,13 +11,12 @@ import { Application } from "./app.js";
 import forEach from "./asyncForeach.js";
 
 config();
-
-
+const f = IntentsBitField.Flags;
 
 const frameworkOptions: FrameworkClientOptions = {
 	commandsPath: `${process.cwd()}/commands/`,
 	databaseOpts: {
-		databaseName: "nut-counter" + (process.env.IS_DEV == "true" ? "-dev" : ""),
+		databaseName: "sso" + (process.env.IS_DEV == "true" ? "-dev" : ""),
 		url: process.env.DB_URL
 	},
 	loggerOpts: {
@@ -30,16 +29,16 @@ const frameworkOptions: FrameworkClientOptions = {
 		logToFile: true
 	},
 	clientOptions: {
-		intents: Object.keys(Discord.Intents.FLAGS) as Discord.IntentsString[],
-		partials: ["CHANNEL", "MESSAGE"]
+		intents: f.Guilds | f.GuildMembers | f.GuildModeration | f.MessageContent | f.DirectMessages,
+		partials: [Partials.Channel, Partials.GuildMember, Partials.Message]
 	},
 	defaultPrefix: "$",
-	name: "Nut Counter",
+	name: "SSO",
 	token: process.env.BOT_TOKEN,
 	ownerID: "272143648114606083",
 	dmPrefixOnPing: true,
 	dmErrorSilently: false,
-	permErrorSilently: false,
+	permErrorSilently: false
 };
 const frameClient = new FrameworkClient(frameworkOptions);
 const application = new Application();
@@ -47,14 +46,14 @@ const application = new Application();
 async function init() {
 	await frameClient.init(application);
 	await application.init(frameClient);
-	await frameClient.loadBotCommands(`${process.cwd()}/../node_modules/strike-discord-framework/dist/defaultCommands/`);
+	// await frameClient.loadBotCommands(`${process.cwd()}/../node_modules/strike-discord-framework/dist/defaultCommands/`);
 	setupAPI(application);
 	// await frameClient.permissions.setPublic("command.misc", true);
 
-	process.on("unhandledRejection", (error) => {
+	process.on("unhandledRejection", error => {
 		application.log.error(error);
 	});
-	process.on("uncaughtException", (error) => {
+	process.on("uncaughtException", error => {
 		application.log.error(error);
 	});
 }

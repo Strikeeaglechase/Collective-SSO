@@ -7,16 +7,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import Discord from "discord.js";
+import { IntentsBitField, Partials } from "discord.js";
 import { config } from "dotenv";
 import FrameworkClient from "strike-discord-framework";
 import { setupAPI } from "./api.js";
 import { Application } from "./app.js";
 config();
+const f = IntentsBitField.Flags;
 const frameworkOptions = {
     commandsPath: `${process.cwd()}/commands/`,
     databaseOpts: {
-        databaseName: "nut-counter" + (process.env.IS_DEV == "true" ? "-dev" : ""),
+        databaseName: "sso" + (process.env.IS_DEV == "true" ? "-dev" : ""),
         url: process.env.DB_URL
     },
     loggerOpts: {
@@ -29,16 +30,16 @@ const frameworkOptions = {
         logToFile: true
     },
     clientOptions: {
-        intents: Object.keys(Discord.Intents.FLAGS),
-        partials: ["CHANNEL", "MESSAGE"]
+        intents: f.Guilds | f.GuildMembers | f.GuildModeration | f.MessageContent | f.DirectMessages,
+        partials: [Partials.Channel, Partials.GuildMember, Partials.Message]
     },
     defaultPrefix: "$",
-    name: "Nut Counter",
+    name: "SSO",
     token: process.env.BOT_TOKEN,
     ownerID: "272143648114606083",
     dmPrefixOnPing: true,
     dmErrorSilently: false,
-    permErrorSilently: false,
+    permErrorSilently: false
 };
 const frameClient = new FrameworkClient(frameworkOptions);
 const application = new Application();
@@ -46,13 +47,13 @@ function init() {
     return __awaiter(this, void 0, void 0, function* () {
         yield frameClient.init(application);
         yield application.init(frameClient);
-        yield frameClient.loadBotCommands(`${process.cwd()}/../node_modules/strike-discord-framework/dist/defaultCommands/`);
+        // await frameClient.loadBotCommands(`${process.cwd()}/../node_modules/strike-discord-framework/dist/defaultCommands/`);
         setupAPI(application);
         // await frameClient.permissions.setPublic("command.misc", true);
-        process.on("unhandledRejection", (error) => {
+        process.on("unhandledRejection", error => {
             application.log.error(error);
         });
-        process.on("uncaughtException", (error) => {
+        process.on("uncaughtException", error => {
             application.log.error(error);
         });
     });
