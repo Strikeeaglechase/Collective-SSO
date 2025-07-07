@@ -29,31 +29,28 @@ export default function ({ app }: RouteResources) {
 			route: "/v2/login",
 			handler: async function (req: Request, res: Response) {
 				res.sendFile(path.resolve("../pages/login.html"));
-			},
+			}
 		},
 		{
 			method: "get",
 			route: "/v2/return",
 			handler: async function (req: Request, res: Response) {
 				res.sendFile(path.resolve("../pages/login.html"));
-			},
+			}
 		},
 		{
 			method: "get",
 			route: "/v2/logout",
 			handler: async function (req: Request, res: Response) {
 				res.sendFile(path.resolve("../pages/logout.html"));
-			},
+			}
 		},
 		{
 			method: "get",
 			route: "/v2/OAuth2",
 			handler: async function (req: Request, res: Response) {
 				if (req.cookies.session) {
-					const token = await app.fetchServiceToken(
-						req.cookies.session,
-						req.cookies.service
-					);
+					const token = await app.fetchServiceToken(req.cookies.session, req.cookies.service);
 					if (token) {
 						return res.redirect(`/v2/return?token=${token}`);
 					}
@@ -61,7 +58,7 @@ export default function ({ app }: RouteResources) {
 				res.redirect(
 					`https://discordapp.com/api/oauth2/authorize?client_id=${CLIENT_ID}&scope=identify&response_type=code&redirect_uri=${REDIRECT_ENCODED}`
 				);
-			},
+			}
 		},
 		{
 			method: "get",
@@ -70,13 +67,10 @@ export default function ({ app }: RouteResources) {
 				const serviceName = req.query.service;
 				if (!serviceName) return res.sendStatus(400);
 
-				const user = await app.fetchUserFromToken(
-					req.params.token,
-					serviceName.toString()
-				);
+				const user = await app.fetchUserFromToken(req.params.token, serviceName.toString());
 				if (!user) res.sendStatus(403);
 				else res.send(user);
-			},
+			}
 		},
 		{
 			method: "get",
@@ -94,48 +88,32 @@ export default function ({ app }: RouteResources) {
 					grant_type: "authorization_code",
 					code: code,
 					redirect_uri: REDIRECT,
-					scope: "identify",
+					scope: "identify"
 				};
-				const response = await fetch(
-					`https://discordapp.com/api/oauth2/token`,
-					{
-						method: "POST",
-						headers: {
-							Authorization: `Basic ${creds}`,
-							"Content-Type": "application/x-www-form-urlencoded",
-						},
-						body: _encode(data),
-					}
-				);
+				const response = await fetch(`https://discordapp.com/api/oauth2/token`, {
+					method: "POST",
+					headers: {
+						"Authorization": `Basic ${creds}`,
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					body: _encode(data)
+				});
 				const json = await response.json();
-				const discordData = await fetch(
-					"http://discordapp.com/api/users/@me",
-					{
-						method: "GET",
-						headers: {
-							Authorization: `Bearer ${json.access_token}`,
-						},
+				const discordData = await fetch("http://discordapp.com/api/users/@me", {
+					method: "GET",
+					headers: {
+						Authorization: `Bearer ${json.access_token}`
 					}
-				);
+				});
 				const discordUserData = await discordData.json();
 				if (!discordUserData.id) return res.sendStatus(500);
-				const rolesReq = await fetch(
-					`https://umapi.centralmind.net/api/users/${discordUserData.id}`,
-					{
-						headers: {
-							Authorization: `Bearer ${process.env.umtok}`,
-						},
-					}
-				);
-				if (rolesReq.status == 200) {
-					discordUserData.roles = await rolesReq.json();
-				}
+				discordUserData.roles = await app.getUserRoles(discordUserData.id);
 				discordUserData.originalUrl = req.cookies.service;
 
 				const session = await app.createSession(discordUserData);
 				res.cookie("session", session.token);
 				res.redirect(`/v2/return`);
-			},
+			}
 		},
 		{
 			route: "/roles/:id",
@@ -145,7 +123,7 @@ export default function ({ app }: RouteResources) {
 				if (!userId) return res.sendStatus(400);
 				const roles = await app.getUserRoles(userId);
 				res.send(roles);
-			},
+			}
 		},
 		{
 			route: "/members/:guildId/:roleId",
@@ -156,7 +134,7 @@ export default function ({ app }: RouteResources) {
 				if (!guildId || !roleId) return res.sendStatus(400);
 				const members = await app.getMembersWithRole(guildId, roleId);
 				res.send(members);
-			},
-		},
+			}
+		}
 	];
 }
