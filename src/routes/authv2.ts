@@ -99,7 +99,7 @@ export default function ({ app }: RouteResources) {
 					body: _encode(data)
 				});
 				const json = await response.json();
-				const discordData = await fetch("http://discordapp.com/api/users/@me", {
+				const discordData = await fetch("https://discordapp.com/api/users/@me", {
 					method: "GET",
 					headers: {
 						Authorization: `Bearer ${json.access_token}`
