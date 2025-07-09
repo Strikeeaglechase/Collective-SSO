@@ -123,6 +123,7 @@ class Application {
 		const role = guild.roles.cache.get(roleId);
 		if (!role) return [];
 
+		await guild.members.fetch();
 		return role.members.map(member => member.id);
 	}
 }
