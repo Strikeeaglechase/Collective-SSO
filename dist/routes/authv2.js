@@ -33,7 +33,7 @@ export default function ({ app }) {
                 return __awaiter(this, void 0, void 0, function* () {
                     res.sendFile(path.resolve("../pages/login.html"));
                 });
-            },
+            }
         },
         {
             method: "get",
@@ -42,7 +42,7 @@ export default function ({ app }) {
                 return __awaiter(this, void 0, void 0, function* () {
                     res.sendFile(path.resolve("../pages/login.html"));
                 });
-            },
+            }
         },
         {
             method: "get",
@@ -51,7 +51,7 @@ export default function ({ app }) {
                 return __awaiter(this, void 0, void 0, function* () {
                     res.sendFile(path.resolve("../pages/logout.html"));
                 });
-            },
+            }
         },
         {
             method: "get",
@@ -66,7 +66,7 @@ export default function ({ app }) {
                     }
                     res.redirect(`https://discordapp.com/api/oauth2/authorize?client_id=${CLIENT_ID}&scope=identify&response_type=code&redirect_uri=${REDIRECT_ENCODED}`);
                 });
-            },
+            }
         },
         {
             method: "get",
@@ -82,7 +82,7 @@ export default function ({ app }) {
                     else
                         res.send(user);
                 });
-            },
+            }
         },
         {
             method: "get",
@@ -101,40 +101,33 @@ export default function ({ app }) {
                         grant_type: "authorization_code",
                         code: code,
                         redirect_uri: REDIRECT,
-                        scope: "identify",
+                        scope: "identify"
                     };
                     const response = yield fetch(`https://discordapp.com/api/oauth2/token`, {
                         method: "POST",
                         headers: {
-                            Authorization: `Basic ${creds}`,
-                            "Content-Type": "application/x-www-form-urlencoded",
+                            "Authorization": `Basic ${creds}`,
+                            "Content-Type": "application/x-www-form-urlencoded"
                         },
-                        body: _encode(data),
+                        body: _encode(data)
                     });
                     const json = yield response.json();
-                    const discordData = yield fetch("http://discordapp.com/api/users/@me", {
+                    const discordData = yield fetch("https://discordapp.com/api/users/@me", {
                         method: "GET",
                         headers: {
-                            Authorization: `Bearer ${json.access_token}`,
-                        },
+                            Authorization: `Bearer ${json.access_token}`
+                        }
                     });
                     const discordUserData = yield discordData.json();
                     if (!discordUserData.id)
                         return res.sendStatus(500);
-                    const rolesReq = yield fetch(`https://umapi.centralmind.net/api/users/${discordUserData.id}`, {
-                        headers: {
-                            Authorization: `Bearer ${process.env.umtok}`,
-                        },
-                    });
-                    if (rolesReq.status == 200) {
-                        discordUserData.roles = yield rolesReq.json();
-                    }
+                    discordUserData.roles = yield app.getUserRoles(discordUserData.id);
                     discordUserData.originalUrl = req.cookies.service;
                     const session = yield app.createSession(discordUserData);
                     res.cookie("session", session.token);
                     res.redirect(`/v2/return`);
                 });
-            },
+            }
         },
         {
             route: "/roles/:id",
@@ -147,7 +140,7 @@ export default function ({ app }) {
                     const roles = yield app.getUserRoles(userId);
                     res.send(roles);
                 });
-            },
+            }
         },
         {
             route: "/members/:guildId/:roleId",
@@ -161,7 +154,7 @@ export default function ({ app }) {
                     const members = yield app.getMembersWithRole(guildId, roleId);
                     res.send(members);
                 });
-            },
-        },
+            }
+        }
     ];
 }
